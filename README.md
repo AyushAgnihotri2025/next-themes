@@ -212,6 +212,16 @@ If your Next.js app uses a class to style the page based on the theme, change th
 
 Now, setting the theme to "dark" will set `class="dark"` on the `html` element.
 
+### Both Class and data attribute
+
+If your Next.js app uses a class and data attribute both to style the page based on the theme, change the attribute prop to `["class", "data-theme"]`:
+
+```js
+<ThemeProvider attribute=["class", "data-theme"]>
+```
+
+Now, setting the theme to "dark" will set both `class="dark"` and `data-theme="dark"` on the `html` element.
+
 ### Force page to a theme
 
 Let's say your cool new marketing page is dark mode only. The page should always use the dark theme, and changing the theme should have no effect. To force a theme on your Next.js pages, simply set a variable on the page component:
@@ -524,6 +534,12 @@ Nope. See the [example](#without-css-variables).
 **Can I set the class or data attribute on the body or another element?**
 
 Nope. If you have a good reason for supporting this feature, please open an issue.
+
+---
+
+**Can I set the both class and data attribute on the body?**
+
+Yes, See the [example](#both-class-and-data-attribute).
 
 ---
 

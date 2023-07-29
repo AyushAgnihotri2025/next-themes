@@ -58,15 +58,31 @@ const Theme: React.FC<ThemeProviderProps> = ({
     const enable = disableTransitionOnChange ? disableAnimation() : null
     const d = document.documentElement
 
-    if (attribute === 'class') {
-      d.classList.remove(...attrs)
+    if (typeof attribute === 'object') {
+      for (attr in attribute) {
+        if (attribute[attr] === 'class') {
+          d.classList.remove(...attrs)
 
-      if (name) d.classList.add(name)
+          if (name) d.classList.add(name)
+        } else {
+          if (name) {
+            d.setAttribute(attribute[attr], name)
+          } else {
+            d.removeAttribute(attribute[attr])
+          }
+        }
+      }
     } else {
-      if (name) {
-        d.setAttribute(attribute, name)
+      if (attribute === 'class') {
+        d.classList.remove(...attrs)
+
+        if (name) d.classList.add(name)
       } else {
-        d.removeAttribute(attribute)
+        if (name) {
+          d.setAttribute(attribute, name)
+        } else {
+          d.removeAttribute(attribute)
+        }
       }
     }
 
@@ -188,12 +204,25 @@ const ThemeScript = memo(
 
     // Code-golfing the amount of characters in the script
     const optimization = (() => {
-      if (attribute === 'class') {
-        const removeClasses = `c.remove(${attrs.map((t: string) => `'${t}'`).join(',')})`
-
-        return `var d=document.documentElement,c=d.classList;${removeClasses};`
+      if (typeof attribute === 'object') {
+        var finalChars = ''
+        for (attr in attribute) {
+          if (attribute[attr] === 'class') {
+            const removeClasses = `c.remove(${attrs.map((t: string) => `'${t}'`).join(',')})`
+            finalChars += `var d=document.documentElement,c=d.classList;${removeClasses};`
+          } else {
+            finalChars += `var d=document.documentElement,n='${attribute[attr]}',s='setAttribute';`
+          }
+        }
+        return finalChars
       } else {
-        return `var d=document.documentElement,n='${attribute}',s='setAttribute';`
+        if (attribute === 'class') {
+          const removeClasses = `c.remove(${attrs.map((t: string) => `'${t}'`).join(',')})`
+
+          return `var d=document.documentElement,c=d.classList;${removeClasses};`
+        } else {
+          return `var d=document.documentElement,n='${attribute}',s='setAttribute';`
+        }
       }
     })()
 
@@ -223,15 +252,31 @@ const ThemeScript = memo(
         text += `d.style.colorScheme = '${name}';`
       }
 
-      if (attribute === 'class') {
-        if (literal || resolvedName) {
-          text += `c.add(${val})`
-        } else {
-          text += `null`
+      if (typeof attribute === 'object') {
+        for (attr in attribute) {
+          if (attribute[attr] === 'class') {
+            if (literal || resolvedName) {
+              text += `c.add(${val})`
+            } else {
+              text += `null`
+            }
+          } else {
+            if (resolvedName) {
+              text += `d[s](n,${val})`
+            }
+          }
         }
       } else {
-        if (resolvedName) {
-          text += `d[s](n,${val})`
+        if (attribute === 'class') {
+          if (literal || resolvedName) {
+            text += `c.add(${val})`
+          } else {
+            text += `null`
+          }
+        } else {
+          if (resolvedName) {
+            text += `d[s](n,${val})`
+          }
         }
       }
 
@@ -256,10 +301,10 @@ const ThemeScript = memo(
       return `!function(){try{${optimization}var e=localStorage.getItem('${storageKey}');if(e){${
         value ? `var x=${JSON.stringify(value)};` : ''
       }${updateDOM(value ? `x[e]` : 'e', true)}}else{${updateDOM(
-        defaultTheme,
-        false,
-        false
-      )};}${fallbackColorScheme}}catch(t){}}();`
+          defaultTheme,
+          false,
+          false
+        )};}${fallbackColorScheme}}catch(t){}}();`
     })()
 
     return <script nonce={nonce} dangerouslySetInnerHTML={{ __html: scriptSrc }} />
