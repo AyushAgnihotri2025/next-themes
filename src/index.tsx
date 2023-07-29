@@ -45,7 +45,7 @@ const Theme: React.FC<ThemeProviderProps> = ({
   const [resolvedTheme, setResolvedTheme] = useState(() => getTheme(storageKey))
   const attrs = !value ? themes : Object.values(value)
 
-  const applyTheme = useCallback(theme => {
+  const applyTheme = useCallback((theme: any) => {
     let resolved = theme
     if (!resolved) return
 
@@ -59,7 +59,7 @@ const Theme: React.FC<ThemeProviderProps> = ({
     const d = document.documentElement
 
     if (typeof attribute === 'object') {
-      for (attr in attribute) {
+      for (let attr in Object.keys(attribute)) {
         if (attribute[attr] === 'class') {
           d.classList.remove(...attrs)
 
@@ -97,7 +97,7 @@ const Theme: React.FC<ThemeProviderProps> = ({
   }, [])
 
   const setTheme = useCallback(
-    theme => {
+    (theme: any) => {
       setThemeState(theme)
 
       // Save to storage
@@ -206,7 +206,7 @@ const ThemeScript = memo(
     const optimization = (() => {
       if (typeof attribute === 'object') {
         var finalChars = ''
-        for (attr in attribute) {
+        for (let attr in Object.keys(attribute)) {
           if (attribute[attr] === 'class') {
             const removeClasses = `c.remove(${attrs.map((t: string) => `'${t}'`).join(',')})`
             finalChars += `var d=document.documentElement,c=d.classList;${removeClasses};`
@@ -253,7 +253,7 @@ const ThemeScript = memo(
       }
 
       if (typeof attribute === 'object') {
-        for (attr in attribute) {
+        for (let attr in Object.keys(attribute)) {
           if (attribute[attr] === 'class') {
             if (literal || resolvedName) {
               text += `c.add(${val})`
